@@ -1,3 +1,4 @@
+// Package recaptcha interacts with the reCaptcha verification API
 package recaptcha
 
 import (
@@ -12,10 +13,10 @@ const (
 )
 
 var (
-    ErrSecretMissing   = errors.New("reCaptcha secret is missing.")
-    ErrSecretInvalid   = errors.New("reCaptcha secret is invalid.")
-    ErrResponseMissing = errors.New("reCaptcha response is missing.")
-    ErrResponseInvalid = errors.New("reCaptcha response is invalid.")
+    ErrSecretMissing   = errors.New("The secret parameter is missing.")
+    ErrSecretInvalid   = errors.New("The secret parameter is invalid or malformed.")
+    ErrResponseMissing = errors.New("The response parameter is missing.")
+    ErrResponseInvalid = errors.New("The response parameter is invalid or malformed.")
 )
 
 type Response struct {
@@ -49,13 +50,17 @@ func (r *Response) populateErrors() {
     }
 }
 
+// Public verfication function
+// It requires the reCaptcha secret, the response from the widget.
+// It returns the reCaptcha response as a struct.
 func Verify(secret string, response string, remoteip string) (*Response, error) {
 
     values := make(url.Values)
     values.Set("secret", secret)
     values.Set("response", response)
+    values.Set("remoteip", remoteip)
 
-    resp, err := http.Get(verifyURL + "?" + values.Encode())
+    resp, err := http.PostForm(verifyURL, values)
     if err != nil {
         return nil, err
 
